@@ -2,3 +2,4 @@
 .Rhistory
 .RData
 gmailr-tutorial.json
+.httr-oauth
