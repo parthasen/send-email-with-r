@@ -89,3 +89,66 @@ Is the status code 200? Did your email get through? Do not proceed until the ans
 BTW you can add members to your project from "Permissions" in Google Developers Console, allowing them to also download JSON credentials for the same project.
 
 ## Compose and send your emails
+
+The hard parts are over! See `send-email-with-r.r` for clean code to compose and send email. Here's the guided tour.
+
+The file `addresses.csv` holds names and email addresses. The file `marks.csv` holds names and homework marks. (In this case, the LoTR characters receive marks based on the number of words they spoke in the Fellowship of the Ring.) Read those in and join.
+
+```r
+library(plyr)
+library(dplyr)
+library(gmailr)
+addresses <- read.csv("addresses.csv", stringsAsFactor = FALSE)
+marks <- read.csv("marks.csv", stringsAsFactor = FALSE)
+this_hw <- "The Fellowship Of The Ring"
+my_dat <- left_join(marks, addresses)
+```
+
+Next we create a data.frame where each variable is a key piece of the email, e.g. the "To" field or the body.
+
+```r
+email_sender <- 'Peter Jackson <peter@tolkien.com>'
+optional_bcc <- 'Anonymous <anon@palantir.org>'      # bcc is probably YOU
+body <- "Hi, %s.
+
+Your mark for %s is %s.
+
+Thanks for participating in this film!
+"
+emails <- my_dat %>%
+	mutate(
+		To = sprintf('%s <%s>', name, email),
+		Bcc = optional_bcc,
+		From = email_sender,
+		Subject = sprintf('Mark for %s', this_hw),
+		body = sprintf(body, name, this_hw, mark)) %>%
+	select(To, Bcc, From, Subject, body)
+write.csv(emails, "composed-emails.csv", row.names = FALSE, quote = FALSE)
+```
+
+We write this data.frame to `.csv` for an easy-to-read record of the composed emails.
+
+Now authenticate yourself. If you've cached your OAuth credentials this should "just work", though you might see something about refreshing things. If you have not cached, you'll have to do something in your browser.
+
+```r
+gmail_auth("gmailr-tutorial.json", scope = 'compose')
+```
+
+Now send your emails and save the return value in case you need to do forensics later.
+
+```r
+sent <- llply(emails, send_message, .progress = 'text')
+saveRDS(sent, paste(this_hw, "sent-emails.rds", sep = "_"))
+```
+
+And just to be safe, take a look at the status codes. Hopefully they're uniformly 200, but better safe than sorry.
+
+```r
+status.codes <- ldply(sent, .id = 'To', function(x) data.frame(
+ 	Status.Code = x$status_code,
+ 	Date = x$headers$date))
+uhoh <- status.codes %>% filter(Status.Code != 200)
+if (nrow(uhoh) > 0) knitr::kable(uhoh)
+```
+
+The end.
