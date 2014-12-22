@@ -9,7 +9,7 @@ Key pieces:
 
   * a project in Google Developers Console to manage your use of the Gmail API
   * the [`gmailr` R package](http://cran.r-project.org/web/packages/gmailr/index.html) by Jim Hester, which wraps the Gmail API (development on [GitHub](https://github.com/jimhester/gmailr))
-  * the `plyr` and `dplyr` packages for data wrangling (do this with base R if you prefer)
+  * the [`plyr`](http://cran.r-project.org/web/packages/plyr/index.html) and [`dplyr`](http://cran.r-project.org/web/packages/dplyr/index.html) packages for data wrangling (do this with base R if you prefer)
   * `addresses.csv` a file containing email addresses, identified by a __key__. In our case, student names.
   * `marks.csv` a file containing the variable bits of the email you plan to send, including the same identifying __key__ as above.  In our case, the homework marks.
   * the script `send-email-with-r.r` that
