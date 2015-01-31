@@ -134,6 +134,17 @@ Now authenticate yourself. If you've cached your OAuth credentials this should "
 gmail_auth("gmailr-tutorial.json", scope = 'compose')
 ```
 
+We use the `gmailr::mime()` function to convert each row of this data.frame into a mime formatted message object.
+
+```r
+emails <- dlply(emails, ~ To, function(df) mime(
+	To = df$To,
+	Bcc = df$Bcc,
+	From = df$From,
+	Subject = df$Subject,
+	body = df$body))
+```
+
 Now send your emails and save the return value in case you need to do forensics later.
 
 ```r
